@@ -190,10 +190,5 @@ join public.exercises e  on e.id = s.exercise_id
 left join public.joint_results jr on jr.session_id = s.id
 group by s.id, s.user_id, s.exercise_id, e.name, s.started_at, s.completed_at, s.overall_accuracy;
 
--- RLS on view: filter by user
-create or replace function public.session_summary_policy()
-returns boolean
-language sql stable
-as $$
-  select auth.uid() = user_id
-$$;
+-- Note: session_summary view inherits RLS from the underlying sessions table.
+-- No additional policy needed — users automatically see only their own rows.
