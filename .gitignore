@@ -16,6 +16,14 @@ Thumbs.db
 # Obsidian auto-generated (open second-brain/ as vault separately)
 second-brain/.obsidian/
 
+# Sub-repos — each has its own GitHub remote, not tracked here
+kinalyze-frontend/
+kinalyze-backend/
+kinalyze-data/
+kinalyze-testing/
+kinalyze-security/
+kinalyze-design-review/
+
 # Node (if any root-level tooling)
 node_modules/
 
@@ -28,6 +36,9 @@ venv/
 
 # Logs
 *.log
+
+# Claude Code local settings (machine-specific)
+.claude/settings.local.json
 
 # Secrets — belt-and-suspenders (gitleaks pre-commit is primary gate)
 *.pem
