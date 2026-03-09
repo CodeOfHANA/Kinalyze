@@ -646,10 +646,53 @@ Frontend displays summary
 - **GDPR:** Include privacy policy stub; no third-party data sharing in v1
 - **Academic scope:** VTU BAD685 submission; no commercial deployment in v1
 
-### Security Hardening (Development Workflow)
+### API Security Hardening (Production-Grade — Implemented in v1)
 
-**Secret Management Rules:**
+The backend treats three vulnerabilities as non-negotiable for any publicly-accessible deployment.
+
+#### Vulnerability 1 — Rate Limiting
+
+**Risk:** Unlimited requests allow any client to flood `/analyze` — each call runs MediaPipe on CPU, making the backend trivially DDoS-able and creating unexpected infrastructure costs.
+
+**Fix:** `slowapi` IP-based rate limiting on all public-facing routes.
+
+| Route | Limit | Env var override |
+|-------|-------|-----------------|
+| `POST /analyze` | 30 req/min | `ANALYZE_RATE_LIMIT` |
+| `GET /exercises*` | 60 req/min | `EXERCISES_RATE_LIMIT` |
+| `GET /health` | unlimited | — |
+
+Returns HTTP 429 + `Retry-After` header on breach. Limits are configurable via environment variables without code changes.
+
+#### Vulnerability 2 — Authentication & Authorization
+
+**Risk:** Without token verification, any internet user can call `/analyze` — processing arbitrary images on the server, bypassing Supabase RLS, and consuming backend resources.
+
+**Fix:** Every `POST /analyze` request requires a valid Supabase JWT in `Authorization: Bearer <token>`. Verification uses `PyJWT` with HS256 and the `SUPABASE_JWT_SECRET` signing secret. Returns HTTP 401 for missing, expired, or invalid tokens.
+
+- `/exercises*` and `/health` remain public — they expose no user data
+- `SUPABASE_JWT_SECRET` = raw signing secret from Supabase Dashboard → Settings → API → JWT Settings (NOT the service_role key)
+- Frontend already sends the token via `supabase.auth.getSession().access_token`
+
+#### Vulnerability 3 — CORS Policy
+
+**Risk:** Wildcard `*` origins allow any website to make cross-origin requests to the API. A malicious page can call `/analyze` using a victim's credentials via the browser.
+
+**Fix:** Explicit origin allowlist in all environments — no wildcard ever.
+
+```
+Development:  ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5174
+Production:   ALLOWED_ORIGINS=https://your-app.vercel.app
+```
+
+Configured via `ALLOWED_ORIGINS` env var. `allow_methods` restricted to `["GET", "POST"]` only.
+
+---
+
+### Secret Management Rules
+
 - `GROQ_API_KEY`, `ANTHROPIC_API_KEY` → Supabase secrets only, never in any repo
+- `SUPABASE_JWT_SECRET` → Backend `.env` (gitignored); the raw signing secret, never a JWT token
 - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` → `.env.local` (gitignored, safe to expose due to RLS)
 - All `.env*` files in `.gitignore` across all 6 repos — enforced by `gitleaks` pre-commit hook
 - Never use `enableAllProjectMcpServers: true` in `.claude/settings.json` — require explicit trust per repo
