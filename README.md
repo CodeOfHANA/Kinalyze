@@ -10,7 +10,7 @@
 
 | Service | URL |
 |---|---|
-| Frontend | https://kinalyze-frontend.vercel.app |
+| Frontend | https://kinalyze.vercel.app |
 | Backend API | https://kinalyze-backend.onrender.com/health |
 
 ---
@@ -495,7 +495,7 @@ GitHub (CodeOfHANA/kinalyze-backend)  ──push──►  Render (Docker, free)
                                                    https://kinalyze-backend.onrender.com
 
 GitHub (CodeOfHANA/kinalyze-frontend) ──push──►  Vercel (static, CDN)
-                                                   https://kinalyze-frontend.vercel.app
+                                                   https://kinalyze.vercel.app
 
 supabase/ (this repo)  ──config push──►  Supabase (Ireland)
                                           yappwsmyykbbsmfuxdfw.supabase.co
@@ -511,7 +511,7 @@ Vercel auto-deploys on every push to `main` of the frontend repo.
 | Variable | Description |
 |---|---|
 | `SUPABASE_JWT_SECRET` | Legacy JWT Secret from Supabase → Project Settings → Data API → JWT Settings |
-| `ALLOWED_ORIGINS` | Frontend URL, no trailing slash: `https://kinalyze-frontend.vercel.app` |
+| `ALLOWED_ORIGINS` | Frontend URL, no trailing slash: `https://kinalyze.vercel.app` |
 | `ENVIRONMENT` | `production` (set in render.yaml) |
 
 **Vercel (frontend):**
